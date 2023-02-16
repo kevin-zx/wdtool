@@ -5,8 +5,8 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/kevin-zx/kbase/kclickhouse"
-	crawlerraw "github.com/kevin-zx/wdtool/crawler-raw"
-	"github.com/kevin-zx/wdtool/crawler-raw/dbentities"
+	"github.com/kevin-zx/wdtool/crawlerraw"
+	"github.com/kevin-zx/wdtool/crawlerraw/dbentities"
 )
 
 type clickhouseRepository struct {
