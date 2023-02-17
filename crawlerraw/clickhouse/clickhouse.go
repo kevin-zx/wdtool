@@ -36,9 +36,9 @@ func (c *clickhouseRepository) Close() error {
 
 func (c *clickhouseRepository) SaveRaw(tableName string, datas []*dbentities.CrawlerRawData) error {
 	preparedSql := fmt.Sprintf(`
-	INSERT INTO %s (seed, data, create_time)
+	INSERT INTO %s (seed, data, created_at)
 	VALUES
-	(:seed, :data, :create_time)
+	(:seed, :data, :created_at)
 	`, tableName)
 	tx := c.db.MustBegin()
 	stmt, err := tx.PrepareNamed(preparedSql)
