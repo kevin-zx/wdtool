@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"errors"
 	"io"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -36,6 +37,7 @@ func CutCsv(inputFileName string, outputFileName string, cutFields []string, lab
 	// }
 
 	for {
+		i++
 		record, err := csvwR.Read()
 		if err != nil && err == io.EOF {
 			break
@@ -44,25 +46,31 @@ func CutCsv(inputFileName string, outputFileName string, cutFields []string, lab
 			return err
 		}
 
-		if i == 0 {
+		if i == 1 {
 			for i, field := range cutFields {
 				found := false
 				for j, name := range record {
+					log.Println(name, field)
 					if field == name {
 						cutFiledsNum[i] = j
 						found = true
 						break
 					}
-					if label == field {
-						labelNum = i
-					}
 				}
 				if !found {
+					log.Printf("field %s not found", field)
 					return ErrorInvalidField
 				}
-				if labelNum == -1 {
-					return ErrorInvalidLabel
+			}
+
+			for j, name := range record {
+				if label == name {
+					labelNum = j
+					break
 				}
+			}
+			if labelNum == -1 {
+				return ErrorInvalidLabel
 			}
 			continue
 		}
@@ -73,10 +81,19 @@ func CutCsv(inputFileName string, outputFileName string, cutFields []string, lab
 		}
 		content = strings.TrimSuffix(content, ",")
 		words := x.Cut(content, use_hmm)
-		labels := strings.Split(record[labelNum], labelSplit)
+		labels := []string{}
+		if labelSplit != "" {
+			labels = strings.Split(record[labelNum], labelSplit)
+		} else {
+			labels = append(labels, record[labelNum])
+		}
+
 		for _, word := range words {
 			cutResult["all"][word]++
 			for _, label := range labels {
+				if label == "" {
+					continue
+				}
 				if _, ok := cutResult[label]; !ok {
 					cutResult[label] = make(map[string]int)
 				}
@@ -96,6 +113,12 @@ func CutCsv(inputFileName string, outputFileName string, cutFields []string, lab
 	})
 	for label, result := range cutResult {
 		for word, count := range result {
+			if count < 2 {
+				continue
+			}
+			if len(strings.Split(word, "")) < 2 {
+				continue
+			}
 			csvW.Write([]string{label, word, strconv.Itoa(count)})
 		}
 	}
